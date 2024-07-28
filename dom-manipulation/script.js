@@ -94,12 +94,60 @@ function importFromJsonFile(event) {
     fileReader.readAsText(event.target.files[0]);
 }
 
+// Simulated server interaction
+const serverUrl = 'https://jsonplaceholder.typicode.com/posts'; // Example server URL
+
+// Function to fetch quotes from the server
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch(serverUrl);
+        const serverQuotes = await response.json();
+        handleServerQuotes(serverQuotes);
+    } catch (error) {
+        console.error('Error fetching quotes from server:', error);
+    }
+}
+
+// Function to handle quotes fetched from the server
+function handleServerQuotes(serverQuotes) {
+    const newQuotes = serverQuotes.map(q => ({ text: q.title, category: q.body })); // Adjust based on actual server data structure
+    const combinedQuotes = mergeQuotes(quotes, newQuotes);
+    quotes = combinedQuotes;
+    saveQuotes();
+    updateCategorySelect();
+    notifyUser('Quotes updated from server');
+}
+
+// Function to merge local and server quotes
+function mergeQuotes(localQuotes, serverQuotes) {
+    const combinedQuotes = [...localQuotes];
+    serverQuotes.forEach(sq => {
+        if (!localQuotes.some(lq => lq.text === sq.text && lq.category === sq.category)) {
+            combinedQuotes.push(sq);
+        }
+    });
+    return combinedQuotes;
+}
+
+// Function to notify the user of updates
+function notifyUser(message) {
+    const notification = document.getElementById('notification');
+    notification.innerText = message;
+    notification.style.display = 'block';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
 // Event listeners
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 document.getElementById('addQuoteButton').addEventListener('click', addQuote);
 document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
 document.getElementById('exportButton').addEventListener('click', exportToJsonFile);
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+
+// Periodic data fetching
+setInterval(fetchQuotesFromServer, 60000); // Fetch new quotes every 60 seconds
 
 // Initial setup
 updateCategorySelect();
