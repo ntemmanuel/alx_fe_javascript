@@ -7,7 +7,7 @@ let quotes = JSON.parse(localStorage.getItem('quotes')) || [
 
 // Function to display a random quote
 function showRandomQuote() {
-    const selectedCategory = document.getElementById('categorySelect').value;
+    const selectedCategory = document.getElementById('categoryFilter').value;
     const filteredQuotes = selectedCategory === 'all' ? quotes : quotes.filter(quote => quote.category === selectedCategory);
 
     if (filteredQuotes.length > 0) {
@@ -48,7 +48,7 @@ function saveQuotes() {
 
 // Function to update the category dropdown
 function updateCategorySelect() {
-    const categorySelect = document.getElementById('categorySelect');
+    const categorySelect = document.getElementById('categoryFilter');
     const categories = ['all', ...new Set(quotes.map(quote => quote.category))];
     
     categorySelect.innerHTML = '';
@@ -58,6 +58,13 @@ function updateCategorySelect() {
         option.textContent = category;
         categorySelect.appendChild(option);
     });
+}
+
+// Function to filter quotes based on selected category
+function filterQuotes() {
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    localStorage.setItem('selectedCategory', selectedCategory);
+    showRandomQuote();
 }
 
 // Function to export quotes to a JSON file
@@ -90,12 +97,16 @@ function importFromJsonFile(event) {
 // Event listeners
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 document.getElementById('addQuoteButton').addEventListener('click', addQuote);
-document.getElementById('categorySelect').addEventListener('change', showRandomQuote);
+document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
 document.getElementById('exportButton').addEventListener('click', exportToJsonFile);
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
 
 // Initial setup
 updateCategorySelect();
+const lastSelectedCategory = localStorage.getItem('selectedCategory');
+if (lastSelectedCategory) {
+    document.getElementById('categoryFilter').value = lastSelectedCategory;
+}
 showRandomQuote();
 
 // Display the last viewed quote from session storage if available
